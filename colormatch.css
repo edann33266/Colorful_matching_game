@@ -7,13 +7,14 @@
 body {
     font-family: Arial, sans-serif;
     min-height: 100vh;
-    background:
-        linear-gradient(135deg,
-            #ff9a9e 0%,
-            #fad0c4 25%,
-            #fbc2eb 50%,
-            #a18cd1 75%,
-            #84fab0 100%);
+    background: linear-gradient(
+        135deg,
+        #ff9a9e 0%,
+        #fad0c4 25%,
+        #fbc2eb 50%,
+        #a18cd1 75%,
+        #84fab0 100%
+    );
     overflow-x: hidden;
 }
 
@@ -28,7 +29,7 @@ body {
 /* Header */
 .header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .header h1 {
@@ -43,27 +44,26 @@ body {
     margin-top: 10px;
 }
 
-/* Stats Section */
+/* Stats Cards */
 .game-info {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 20px;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .info-card {
     background: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(15px);
+    backdrop-filter: blur(12px);
     border-radius: 20px;
     padding: 20px;
     text-align: center;
-
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
 
     box-shadow:
-        0 8px 20px rgba(0,0,0,0.1);
+        0 8px 20px rgba(0, 0, 0, 0.1);
 
-    transition: 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
 .info-card:hover {
@@ -86,16 +86,17 @@ body {
 .progress-container {
     width: 100%;
     height: 20px;
-    background: rgba(255,255,255,0.4);
+    background: rgba(255, 255, 255, 0.4);
     border-radius: 50px;
     overflow: hidden;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 #progress-bar {
     width: 100%;
     height: 100%;
     border-radius: 50px;
+
     background: linear-gradient(
         to right,
         #00ff87,
@@ -110,8 +111,8 @@ body {
     display: flex;
     justify-content: center;
     gap: 20px;
-    margin-bottom: 30px;
     flex-wrap: wrap;
+    margin-bottom: 35px;
 }
 
 button {
@@ -124,10 +125,14 @@ button {
     font-size: 1rem;
     font-weight: bold;
 
-    transition: 0.3s ease;
+    transition: transform 0.3s ease;
 
     box-shadow:
-        0 6px 15px rgba(0,0,0,0.2);
+        0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    transform: scale(1.08);
 }
 
 #startbtn {
@@ -140,8 +145,9 @@ button {
     color: white;
 }
 
-button:hover {
-    transform: scale(1.08);
+#play-again-btn {
+    background: #ff4081;
+    color: white;
 }
 
 /* Game Grid */
@@ -152,12 +158,12 @@ button:hover {
     justify-content: center;
 }
 
-/* Card */
+/* Cards */
 .card {
     width: 120px;
     height: 120px;
 
-    background: rgba(255,255,255,0.3);
+    background: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(12px);
 
     border-radius: 25px;
@@ -169,10 +175,11 @@ button:hover {
     cursor: pointer;
 
     font-size: 3rem;
+    font-weight: bold;
 
     transition:
-        transform 0.3s,
-        background 0.3s;
+        transform 0.3s ease,
+        background 0.3s ease;
 }
 
 .card:hover {
@@ -184,8 +191,8 @@ button:hover {
 }
 
 .card.matched {
-    animation: bounce 0.6s ease;
     border: 4px solid #00e676;
+    animation: bounce 0.5s ease;
 }
 
 /* Popup */
@@ -193,7 +200,7 @@ button:hover {
     position: fixed;
     inset: 0;
 
-    background: rgba(0,0,0,0.4);
+    background: rgba(0, 0, 0, 0.45);
 
     display: flex;
     justify-content: center;
@@ -203,14 +210,16 @@ button:hover {
 }
 
 .popup-content {
-    background: white;
     width: 90%;
     max-width: 400px;
-    border-radius: 30px;
-    text-align: center;
-    padding: 40px;
 
-    animation: popupAnimation .4s ease;
+    background: white;
+    border-radius: 30px;
+
+    padding: 40px;
+    text-align: center;
+
+    animation: popupAnimation 0.4s ease;
 }
 
 .popup-content h2 {
@@ -219,20 +228,15 @@ button:hover {
 }
 
 .popup-content p {
-    margin-bottom: 10px;
-}
-
-.hidden {
-    display: none;
+    margin-bottom: 12px;
 }
 
 .popup-stats {
     margin: 20px 0;
 }
 
-#play-again-btn {
-    background: #ff4081;
-    color: white;
+.hidden {
+    display: none;
 }
 
 /* Animations */
@@ -240,9 +244,11 @@ button:hover {
     0% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.15);
     }
+
     100% {
         transform: scale(1);
     }
@@ -260,11 +266,10 @@ button:hover {
     }
 }
 
-/* Responsive */
+/* Tablet */
 @media (max-width: 768px) {
-
     .header h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
 
     #game-container {
@@ -274,23 +279,27 @@ button:hover {
     .card {
         width: 100px;
         height: 100px;
-        font-size: 2.4rem;
+        font-size: 2.5rem;
     }
 }
 
+/* Mobile */
 @media (max-width: 500px) {
-
     #game-container {
-        grid-template-columns: repeat(2, 95px);
+        grid-template-columns: repeat(2, 90px);
     }
 
     .card {
-        width: 95px;
-        height: 95px;
+        width: 90px;
+        height: 90px;
         font-size: 2rem;
     }
 
     .info-card p {
         font-size: 1.5rem;
+    }
+
+    .header h1 {
+        font-size: 1.8rem;
     }
 }
