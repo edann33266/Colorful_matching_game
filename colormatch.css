@@ -7,6 +7,9 @@
 body {
     font-family: Arial, sans-serif;
     min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+
     background: linear-gradient(
         135deg,
         #ff9a9e 0%,
@@ -15,7 +18,42 @@ body {
         #a18cd1 75%,
         #84fab0 100%
     );
-    overflow-x: hidden;
+}
+
+/* Floating Emoji Background */
+body::before {
+    content:
+        "🌈 🎈 ⭐ 🍕 🦄 🍓 🎮 🐶 💖 ✨ 🍭 🎉 🌸 🎵 🌟 🍩 🎀";
+
+    position: fixed;
+    inset: 0;
+
+    font-size: 3rem;
+    line-height: 2.5;
+
+    opacity: 0.12;
+
+    pointer-events: none;
+    z-index: -1;
+
+    animation: floatEmojis 35s linear infinite;
+
+    word-spacing: 50px;
+}
+
+/* Floating Animation */
+@keyframes floatEmojis {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-30px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
 }
 
 /* Main Layout */
