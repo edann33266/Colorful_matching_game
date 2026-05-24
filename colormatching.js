@@ -1,122 +1,189 @@
-const colors = [
-    'red',
-    'blue',
-    'green',
-    'purple',
-    'orange',
-    'pink'
+const emojis = [
+    '🍓',
+    '🌈',
+    '⭐',
+    '🎈',
+    '🐶',
+    '🍕',
+    '🦄',
+    '🎮'
 ];
 
 let cards = [];
 let selectedCards = [];
+let matchedPairs = 0;
 let score = 0;
+let moves = 0;
+let timer = 60;
 let gameInterval;
 
-const startbtn = document.getElementById('startbtn');
+// DOM Elements
 const gameContainer = document.getElementById('game-container');
 const scoreElement = document.getElementById('score');
+const bestScoreElement = document.getElementById('best-score');
+const movesElement = document.getElementById('moves');
 const timerElement = document.getElementById('timer');
+const progressBar = document.getElementById('progress-bar');
 
+const startBtn = document.getElementById('startbtn');
+const restartBtn = document.getElementById('restartbtn');
+
+const popup = document.getElementById('win-popup');
+const finalScore = document.getElementById('final-score');
+const finalMoves = document.getElementById('final-moves');
+const playAgainBtn = document.getElementById('play-again-btn');
+
+// Load best score
+let bestScore = localStorage.getItem('bestScore') || 0;
+bestScoreElement.textContent = bestScore;
+
+// Shuffle Function
 function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-
-    return array;
+    return array.sort(() => Math.random() - 0.5);
 }
 
+// Generate Cards
 function generateCards() {
     gameContainer.innerHTML = '';
 
-    for (const color of cards) {
+    cards.forEach((emoji) => {
         const card = document.createElement('div');
 
         card.classList.add('card');
-        card.dataset.color = color;
-        card.textContent = '?';
+        card.dataset.emoji = emoji;
+        card.innerHTML = '?';
 
         gameContainer.appendChild(card);
-    }
+    });
 }
 
-function handleCardClick(event) {
-    const card = event.target;
+// Start Game
+function startGame() {
+    clearInterval(gameInterval);
+
+    // Reset state
+    selectedCards = [];
+    matchedPairs = 0;
+    score = 0;
+    moves = 0;
+    timer = 60;
+
+    updateUI();
+
+    popup.classList.add('hidden');
+
+    // Duplicate emojis and shuffle
+    cards = shuffle([...emojis, ...emojis]);
+
+    generateCards();
+
+    startTimer();
+}
+
+// Update UI
+function updateUI() {
+    scoreElement.textContent = score;
+    movesElement.textContent = moves;
+    timerElement.textContent = timer;
+
+    progressBar.style.width = `${(timer / 60) * 100}%`;
+}
+
+// Timer
+function startTimer() {
+    gameInterval = setInterval(() => {
+        timer--;
+
+        updateUI();
+
+        if (timer <= 0) {
+            clearInterval(gameInterval);
+
+            setTimeout(() => {
+                alert('⏰ Time Up! Try Again!');
+            }, 200);
+        }
+    }, 1000);
+}
+
+// Card Click
+function handleCardClick(e) {
+    const clickedCard = e.target;
 
     if (
-        !card.classList.contains('card') ||
-        card.classList.contains('matched') ||
-        selectedCards.includes(card) ||
+        !clickedCard.classList.contains('card') ||
+        clickedCard.classList.contains('matched') ||
+        clickedCard.classList.contains('flipped') ||
         selectedCards.length === 2
     ) {
         return;
     }
 
-    card.textContent = '';
-    card.style.backgroundColor = card.dataset.color;
+    // Flip card
+    clickedCard.classList.add('flipped');
+    clickedCard.innerHTML = clickedCard.dataset.emoji;
 
-    selectedCards.push(card);
+    selectedCards.push(clickedCard);
 
     if (selectedCards.length === 2) {
-        setTimeout(checkMatch, 500);
+        moves++;
+        updateUI();
+
+        setTimeout(checkMatch, 600);
     }
 }
 
+// Match Logic
 function checkMatch() {
     const [card1, card2] = selectedCards;
 
-    if (card1.dataset.color === card2.dataset.color) {
+    if (card1.dataset.emoji === card2.dataset.emoji) {
         card1.classList.add('matched');
         card2.classList.add('matched');
 
-        score += 2;
-        scoreElement.textContent = `Score: ${score}`;
-    } else {
-        card1.textContent = '?';
-        card2.textContent = '?';
+        matchedPairs++;
+        score += 10;
 
-        card1.style.backgroundColor = '#ddd';
-        card2.style.backgroundColor = '#ddd';
+        // Win check
+        if (matchedPairs === emojis.length) {
+            clearInterval(gameInterval);
+
+            if (score > bestScore) {
+                bestScore = score;
+                localStorage.setItem('bestScore', bestScore);
+                bestScoreElement.textContent = bestScore;
+            }
+
+            showWinPopup();
+        }
+    } else {
+        card1.classList.remove('flipped');
+        card2.classList.remove('flipped');
+
+        card1.innerHTML = '?';
+        card2.innerHTML = '?';
     }
 
     selectedCards = [];
+    updateUI();
 }
 
-function startGame() {
-    clearInterval(gameInterval);
+// Win Popup
+function showWinPopup() {
+    finalScore.textContent = score;
+    finalMoves.textContent = moves;
 
-    let timeLeft = 30;
-
-    score = 0;
-    selectedCards = [];
-
-    scoreElement.textContent = 'Score: 0';
-    timerElement.textContent = `Time Left: ${timeLeft}`;
-
-    startbtn.disabled = true;
-
-    cards = shuffle([...colors, ...colors]);
-
-    generateCards();
-
-    startGameTimer(timeLeft);
+    popup.classList.remove('hidden');
 }
 
-function startGameTimer(timeLeft) {
-    gameInterval = setInterval(() => {
-        timeLeft--;
+// Restart Game
+restartBtn.addEventListener('click', startGame);
 
-        timerElement.textContent = `Time Left: ${timeLeft}`;
+// Start Button
+startBtn.addEventListener('click', startGame);
 
-        if (timeLeft <= 0) {
-            clearInterval(gameInterval);
+// Play Again Button
+playAgainBtn.addEventListener('click', startGame);
 
-            alert(`Game Over! Final Score: ${score}`);
-
-            startbtn.disabled = false;
-        }
-    }, 1000);
-}
-
+// Card Click Listener
 gameContainer.addEventListener('click', handleCardClick);
-startbtn.addEventListener('click', startGame);
