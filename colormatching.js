@@ -1,12 +1,6 @@
 const emojis = [
-    '🍓',
-    '🌈',
-    '⭐',
-    '🎈',
-    '🐶',
-    '🍕',
-    '🦄',
-    '🎮'
+    '🍓', '🌈', '⭐', '🎈',
+    '🐶', '🍕', '🦄', '🎮'
 ];
 
 let cards = [];
@@ -15,7 +9,8 @@ let matchedPairs = 0;
 let score = 0;
 let moves = 0;
 let timer = 60;
-let gameInterval;
+let gameInterval = null;
+let canClick = true;
 
 // DOM Elements
 const gameContainer = document.getElementById('game-container');
@@ -33,13 +28,22 @@ const finalScore = document.getElementById('final-score');
 const finalMoves = document.getElementById('final-moves');
 const playAgainBtn = document.getElementById('play-again-btn');
 
-// Load best score
+// Load Best Score
 let bestScore = localStorage.getItem('bestScore') || 0;
 bestScoreElement.textContent = bestScore;
 
-// Shuffle Function
+// Fisher-Yates Shuffle
 function shuffle(array) {
-    return array.sort(() => Math.random() - 0.5);
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [array[i], array[j]] = [
+            array[j],
+            array[i]
+        ];
+    }
+
+    return array;
 }
 
 // Generate Cards
@@ -51,33 +55,10 @@ function generateCards() {
 
         card.classList.add('card');
         card.dataset.emoji = emoji;
-        card.innerHTML = '?';
+        card.textContent = '?';
 
         gameContainer.appendChild(card);
     });
-}
-
-// Start Game
-function startGame() {
-    clearInterval(gameInterval);
-
-    // Reset state
-    selectedCards = [];
-    matchedPairs = 0;
-    score = 0;
-    moves = 0;
-    timer = 60;
-
-    updateUI();
-
-    popup.classList.add('hidden');
-
-    // Duplicate emojis and shuffle
-    cards = shuffle([...emojis, ...emojis]);
-
-    generateCards();
-
-    startTimer();
 }
 
 // Update UI
@@ -86,7 +67,34 @@ function updateUI() {
     movesElement.textContent = moves;
     timerElement.textContent = timer;
 
-    progressBar.style.width = `${(timer / 60) * 100}%`;
+    progressBar.style.width =
+        `${(timer / 60) * 100}%`;
+}
+
+// Start Game
+function startGame() {
+    clearInterval(gameInterval);
+
+    selectedCards = [];
+    matchedPairs = 0;
+    score = 0;
+    moves = 0;
+    timer = 60;
+    canClick = true;
+
+    popup.classList.add('hidden');
+
+    startBtn.disabled = true;
+
+    updateUI();
+
+    cards = shuffle([
+        ...emojis,
+        ...emojis
+    ]);
+
+    generateCards();
+    startTimer();
 }
 
 // Timer
@@ -99,73 +107,94 @@ function startTimer() {
         if (timer <= 0) {
             clearInterval(gameInterval);
 
+            canClick = false;
+            startBtn.disabled = false;
+
             setTimeout(() => {
-                alert('⏰ Time Up! Try Again!');
+                alert(
+                    `⏰ Time Up!\nFinal Score: ${score}`
+                );
             }, 200);
         }
     }, 1000);
 }
 
-// Card Click
+// Handle Card Click
 function handleCardClick(e) {
-    const clickedCard = e.target;
+    const card = e.target;
 
     if (
-        !clickedCard.classList.contains('card') ||
-        clickedCard.classList.contains('matched') ||
-        clickedCard.classList.contains('flipped') ||
-        selectedCards.length === 2
+        !canClick ||
+        !card.classList.contains('card') ||
+        card.classList.contains('matched') ||
+        card.classList.contains('flipped') ||
+        selectedCards.length >= 2
     ) {
         return;
     }
 
-    // Flip card
-    clickedCard.classList.add('flipped');
-    clickedCard.innerHTML = clickedCard.dataset.emoji;
+    card.classList.add('flipped');
+    card.textContent = card.dataset.emoji;
 
-    selectedCards.push(clickedCard);
+    selectedCards.push(card);
 
     if (selectedCards.length === 2) {
+        canClick = false;
+
         moves++;
         updateUI();
 
-        setTimeout(checkMatch, 600);
+        setTimeout(checkMatch, 700);
     }
 }
 
-// Match Logic
+// Check Match
 function checkMatch() {
     const [card1, card2] = selectedCards;
 
-    if (card1.dataset.emoji === card2.dataset.emoji) {
+    if (
+        card1.dataset.emoji ===
+        card2.dataset.emoji
+    ) {
         card1.classList.add('matched');
         card2.classList.add('matched');
 
         matchedPairs++;
+
         score += 10;
-
-        // Win check
-        if (matchedPairs === emojis.length) {
-            clearInterval(gameInterval);
-
-            if (score > bestScore) {
-                bestScore = score;
-                localStorage.setItem('bestScore', bestScore);
-                bestScoreElement.textContent = bestScore;
-            }
-
-            showWinPopup();
-        }
     } else {
         card1.classList.remove('flipped');
         card2.classList.remove('flipped');
 
-        card1.innerHTML = '?';
-        card2.innerHTML = '?';
+        card1.textContent = '?';
+        card2.textContent = '?';
     }
 
     selectedCards = [];
+    canClick = true;
+
     updateUI();
+
+    // Win condition
+    if (matchedPairs === emojis.length) {
+        clearInterval(gameInterval);
+
+        startBtn.disabled = false;
+
+        if (score > bestScore) {
+            bestScore = score;
+
+            localStorage.setItem(
+                'bestScore',
+                bestScore
+            );
+
+            bestScoreElement.textContent =
+                bestScore;
+        }
+
+        showWinPopup();
+    }
 }
 
 // Win Popup
@@ -176,14 +205,23 @@ function showWinPopup() {
     popup.classList.remove('hidden');
 }
 
-// Restart Game
-restartBtn.addEventListener('click', startGame);
+// Event Listeners
+startBtn.addEventListener(
+    'click',
+    startGame
+);
 
-// Start Button
-startBtn.addEventListener('click', startGame);
+restartBtn.addEventListener(
+    'click',
+    startGame
+);
 
-// Play Again Button
-playAgainBtn.addEventListener('click', startGame);
+playAgainBtn.addEventListener(
+    'click',
+    startGame
+);
 
-// Card Click Listener
-gameContainer.addEventListener('click', handleCardClick);
+gameContainer.addEventListener(
+    'click',
+    handleCardClick
+);
